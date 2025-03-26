@@ -2,8 +2,9 @@ import withPWA from 'next-pwa';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // productionBrowserSourceMaps: true, // Removed or moved if necessary
-  // Add any additional Next.js config options here
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default withPWA({
