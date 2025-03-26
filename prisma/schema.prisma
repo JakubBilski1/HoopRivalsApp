@@ -1,0 +1,243 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MatchType {
+  QUARTERS
+  POINTS
+}
+
+enum ChallengeType {
+  freethrows
+  threepointcontest
+}
+
+enum FullMoney {
+  leftCorner
+  rightCorner
+  topOfTheKey
+  leftWing
+  rightWing
+  leftMoney
+  rightMoney
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String?
+  surname      String?
+  nickname     String         @unique
+  password     String
+  avatarUrl    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  friendships  Friendship[]
+  friendOf     Friendship[]   @relation("FriendshipRecipient")
+  teamPlayers  TeamPlayer[]
+  quarterStats QuarterStat[]
+  matchStats   MatchStats[]
+  challenges   Challenges[]
+}
+
+
+model Friendship {
+  id         Int      @id @default(autoincrement())
+  
+  // User sending the invitation
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  
+  // User receiving the invitation
+  friend     User     @relation("FriendshipRecipient", fields: [friendId], references: [id])
+  friendId   String
+
+  createdAt  DateTime @default(now())
+  status     String   @default("PENDING")
+}
+
+model Match {
+  id          Int         @id @default(autoincrement())
+  date        DateTime    @default(now())
+  matchType   MatchType
+  teamSize    Int
+  pointsToWin Int?        // Used only for POINTS matches
+  
+  // Relation to teams (expecting exactly two teams per match; enforce via app logic)
+  teams       Team[]
+  
+  // Arena where the match is held
+  arena       Arena       @relation(fields: [arenaId], references: [id])
+  arenaId     Int
+  
+  // One of these should be set based on matchType:
+  quarterMatch QuarterMatch?
+  pointsMatch  PointsMatch?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt() @default(now())
+}
+
+model QuarterMatch {
+  id       Int      @id @default(autoincrement())
+  
+  // Enforce one-to-one relation with Match:
+  match    Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId  Int      @unique
+  
+  // For quarter-based matches – typically expecting 4 quarters:
+  quarters Quarter[]
+}
+
+model PointsMatch {
+  id       Int      @id @default(autoincrement())
+  
+  // Enforce one-to-one relation with Match:
+  match    Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId  Int      @unique
+  
+  // For points-based matches – aggregated match statistics:
+  stats    MatchStats[]
+}
+
+model Quarter {
+  id             Int           @id @default(autoincrement())
+  
+  // Quarter number (e.g., 1, 2, 3, 4)
+  number         Int
+  // Duration of the quarter (e.g., minutes or seconds)
+  duration       Int
+  
+  // Relation to its QuarterMatch parent:
+  quarterMatch   QuarterMatch  @relation(fields: [quarterMatchId], references: [id], onDelete: Cascade)
+  quarterMatchId Int
+  
+  // Statistics assigned to this quarter:
+  stats          QuarterStat[]
+}
+
+model QuarterStat {
+  id                 Int      @id @default(autoincrement())
+  
+  // Stat belongs to a specific quarter:
+  quarter            Quarter  @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  quarterId          Int
+  
+  // Stat for a specific player:
+  player             User     @relation(fields: [playerId], references: [id])
+  playerId           String
+  
+  twoPointsScored    Int
+  threePointsScored  Int
+  freeThrowsScored   Int
+  twoPointsAttempted Int
+  threePointsAttempted Int
+  freeThrowsAttempted Int
+  rebounds           Int?
+  assists            Int?
+  blocks             Int
+}
+
+model Team {
+  id          Int         @id @default(autoincrement())
+  
+  // Team belongs to a match:
+  match       Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId     Int
+  
+  // List of players in the team:
+  teamPlayers TeamPlayer[]
+}
+
+model TeamPlayer {
+  id       Int   @id @default(autoincrement())
+  
+  // Relation to team:
+  team     Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId   Int
+  
+  // Selected user as player:
+  player   User  @relation(fields: [playerId], references: [id])
+  playerId String
+}
+
+model MatchStats {
+  id               Int         @id @default(autoincrement())
+  
+  // Stat belongs to a specific points-based match:
+  pointsMatch      PointsMatch @relation(fields: [pointsMatchId], references: [id], onDelete: Cascade)
+  pointsMatchId    Int
+  
+  // Stat for a specific player:
+  player           User        @relation(fields: [playerId], references: [id])
+  playerId         String
+  
+  twoPointsScored    Int
+  threePointsScored  Int
+  freeThrowsScored   Int
+  twoPointsAttempted Int
+  threePointsAttempted Int
+  freeThrowsAttempted Int
+  rebounds           Int?
+  assists            Int?
+  blocks             Int
+}
+
+model Arena {
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String   // Optionally add a location/address
+  imageUrl  String   // Optionally add an image URL for the arena
+  
+  // Matches held at this arena:
+  matches   Match[]
+}
+
+model Challenges {
+  id                Int                @id @default(autoincrement())
+  challengeType     ChallengeType
+  date              DateTime           @default(now())
+  user              User               @relation(fields: [userId], references: [id])
+  userId            String
+  freeThrows        FreeThrows?        // Optional one-to-one relation
+  threePointContest ThreePointContest? // Optional one-to-one relation
+  challengeBadge    ChallengeBadge    @relation(fields: [challengeBadgeId], references: [id], onDelete: Cascade)
+  challengeBadgeId  Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt @default(now())
+}
+
+model FreeThrows {
+  id          Int        @id @default(autoincrement())
+  challenge   Challenges @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeId Int        @unique // Ensures one-to-one relation
+  shotsMade   Int
+  shotsTaken  Int
+}
+
+model ThreePointContest {
+  id              Int        @id @default(autoincrement())
+  challenge       Challenges @relation(fields: [challengeId], references: [id])
+  challengeId     Int        @unique // Ensures one-to-one relation
+  leftCorner      Int
+  rightCorner     Int
+  topOfTheKey     Int
+  leftWing        Int
+  rightWing       Int
+  leftMoney       Int
+  rightMoney      Int
+  fullMoney       FullMoney
+}
+
+model ChallengeBadge {
+  id           Int         @id @default(autoincrement())
+  badgeName    String
+  badgeColor   String
+  badgeIcon    String
+  challenge    Challenges[]
+}
