@@ -26,6 +26,8 @@ export const GET = async (req: NextRequest) => {
           id,
         },
       });
+      console.log('userget token', token)
+      console.log('userget user', user);
       return new Response(JSON.stringify(user), { status: 200 });
     } else {
       return new Response("Unauthorized", { status: 401 });

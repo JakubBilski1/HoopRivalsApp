@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       return new Response("Internal server error", { status: 500 });
     }
     const token: string = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    console.log('login token', token)
     return new Response(
       JSON.stringify({ message: "User logged in successfully", token }),
       {
