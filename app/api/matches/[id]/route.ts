@@ -7,9 +7,15 @@ import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
+type Props = {
+  params: Promise<{
+    id: string;
+  }>
+}
+
 export const DELETE = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  props: Props,
 ) => {
   const { token } = await req.json();
   try {
@@ -18,9 +24,10 @@ export const DELETE = async (
       return new Response("Unauthorized", { status: 401 });
     }
     const decoded = jwt.decode(token) as Token;
-    const userId = decoded.id;
+    const userId = decoded.id
 
-    const { id } = await Promise.resolve(context.params);
+    const { id } = await props.params
+
     if (!id) {
       return new Response("Missing match ID", { status: 400 });
     }
@@ -59,11 +66,11 @@ export const DELETE = async (
 
 export const PUT = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  props: Props,
 ) => {
   const { date, arenaId, token } = await req.json();
   // Await the params object first:
-  const { id } = await Promise.resolve(context.params);
+  const { id } = await props.params;
   if (!id) {
     return new Response("Missing match ID", { status: 400 });
   }

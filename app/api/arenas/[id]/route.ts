@@ -6,17 +6,28 @@ import { imageFileToBase64 } from "@/utils/usables";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
+type Props = {
+  params: Promise<{
+    id: string;
+  }>
+}
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: Props
 ) {
-  const { id } = params;
   try {
     const formData = await request.formData();
     const token = formData.get("token")?.toString() || "";
     const name = formData.get("name")?.toString() || "";
     const location = formData.get("location")?.toString() || "";
     const imageFile = formData.get("image");
+
+    const params = await props.params;
+    const id = params.id;
+    if (!id) {
+      return new Response("Missing match ID", { status: 400 });
+    }
 
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -54,13 +65,11 @@ export async function PUT(
   }
 }
 
-
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: Props
 ) {
   // Destructure the id directly from params
-  const { id } = params;
   try {
     // Extract token from Authorization header
     const authorizationHeader = request.headers.get("Authorization");
@@ -74,6 +83,13 @@ export async function DELETE(
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const params = await props.params;
+    const id = params.id;
+
+    if (!id) {
+      return new Response("Missing arena ID", { status: 400 });
     }
 
     await prisma.arena.delete({
