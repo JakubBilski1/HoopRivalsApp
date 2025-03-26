@@ -7,14 +7,12 @@ import { imageFileToBase64 } from "@/utils/usables";
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export async function PUT(
-  req: NextRequest,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  // Await the params before destructuring
-  const { id } = await Promise.resolve(context.params);
-  // Now you can safely use id
+  const { id } = params;
   try {
-    const formData = await req.formData();
+    const formData = await request.formData();
     const token = formData.get("token")?.toString() || "";
     const name = formData.get("name")?.toString() || "";
     const location = formData.get("location")?.toString() || "";
@@ -56,15 +54,16 @@ export async function PUT(
   }
 }
 
+
 export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  // Await the params before using them
-  const { id } = await Promise.resolve(context.params);
+  // Destructure the id directly from params
+  const { id } = params;
   try {
-    // Example: extract token from query params – adjust as needed.
-    const authorizationHeader = req.headers.get("Authorization");
+    // Extract token from Authorization header
+    const authorizationHeader = request.headers.get("Authorization");
 
     if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
       return new Response("Unauthorized: No token provided", { status: 401 });
