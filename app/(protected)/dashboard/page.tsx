@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { FullStatsData } from "@/types/Matches";
 import Loading from "@/app/loading";
 import { useUser } from "@/app/context/UserContext";
-import { cookies } from "next/headers";
 
 
 const UserProfile: React.FC = () => {
@@ -70,11 +69,21 @@ const UserProfile: React.FC = () => {
   
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
-      (await cookies()).delete('hoop-rivals-auth-token')
-      window.location.href = "/login";
+      const response = await fetch("/api/logout", {
+        method: "POST",
+      });
+      if (response.ok) {
+        toast.success("Logged out successfully");
+        window.location.href = "/login";
+      } else {
+        toast.error("Logout failed");
+      }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,7 +113,7 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 flex flex-col gap-4 mt-4">
-      <UserCard userData={userData} onLogout={handleLogout} fetchUser={fetchUser} />
+      <UserCard userData={userData} onLogout={handleLogout} fetchUser={fetchUser} loading={loading} />
       {stats ?  <StatsCards stats={stats} /> : <Loading />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {stats ? <PerformanceStats stats={stats} /> : <Loading />}

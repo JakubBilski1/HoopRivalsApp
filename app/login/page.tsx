@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import ButtonLoading from "../button-loading";
 
 const LoginPage: FC = () => {
   const [authData, setAuthData] = useState({
@@ -44,7 +45,6 @@ const LoginPage: FC = () => {
         method: "POST",
         body: JSON.stringify(authData),
       });
-      console.log(response);
       let error = "";
       if (!response.ok) {
         error = await response.text();
@@ -109,7 +109,7 @@ const LoginPage: FC = () => {
               type="submit"
               className="w-full bg-brand-orange hover:bg-orange-600"
             >
-              Log In
+              {loading ? <ButtonLoading /> : "Sign In"}
             </Button>
           </form>
         </CardContent>

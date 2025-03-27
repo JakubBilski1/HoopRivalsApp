@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import ButtonLoading from "../button-loading";
 
 // Optional: Import your local Hoop Rivals logo from the public folder
 
@@ -120,7 +121,7 @@ const LoginPage: FC = () => {
               type="submit"
               className="w-full bg-brand-orange hover:bg-orange-600"
             >
-              Sign Up
+              {loading ? <ButtonLoading /> : "Sign Up"}
             </Button>
           </form>
         </CardContent>

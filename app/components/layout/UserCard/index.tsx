@@ -25,9 +25,10 @@ interface UserCardProps {
   userData?: User;
   onLogout: () => void;
   fetchUser: () => void;
+  loading?: boolean;
 }
 
-export const UserCard: React.FC<UserCardProps> = ({ userData, onLogout, fetchUser }) => {
+export const UserCard: React.FC<UserCardProps> = ({ userData, onLogout, fetchUser, loading }) => {
   const [open, setOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -136,7 +137,7 @@ export const UserCard: React.FC<UserCardProps> = ({ userData, onLogout, fetchUse
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <Button variant="default" className="bg-brand-orange hover:bg-orange-600 text-white" onClick={onLogout}>
-            Log Out
+            {loading ? <ButtonLoading /> : "Logout"}
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
