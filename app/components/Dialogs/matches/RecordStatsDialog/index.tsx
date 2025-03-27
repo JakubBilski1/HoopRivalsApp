@@ -43,7 +43,6 @@ type Stats = {
 
 type body = {
   statsData: { quarterId: number; stats: Stats }[] | { stats: Stats };
-  token: string;
   matchId?: number;
 };
 
@@ -242,7 +241,6 @@ export function RecordStatsDialog({
 
       return {
         statsData: statsDataArray,
-        token: localStorage.getItem("token") || "",
         matchId: match.id,
       };
     } else {
@@ -273,7 +271,6 @@ export function RecordStatsDialog({
       });
       return {
         statsData: { stats: { teamA, teamB } },
-        token: localStorage.getItem("token") || "",
         matchId: match.id,
       };
     }

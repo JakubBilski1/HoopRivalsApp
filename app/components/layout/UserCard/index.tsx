@@ -81,7 +81,6 @@ export const UserCard: React.FC<UserCardProps> = ({ userData, onLogout, fetchUse
     setIsLoading(true);
     try {
       const payload = {
-        token: localStorage.getItem("token"),
         userData: formData,
       };
       const response = await fetch("/api/user", {

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { FullStatsData } from "@/types/Matches";
 import Loading from "@/app/loading";
 import { useUser } from "@/app/context/UserContext";
+import { cookies } from "next/headers";
 
 
 const UserProfile: React.FC = () => {
@@ -29,10 +30,7 @@ const UserProfile: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch("/api/stats", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       const data = await response.json();
       console.log(data);
@@ -49,10 +47,7 @@ const UserProfile: React.FC = () => {
 
   const fetchUser = async () => {
     const response = await fetch("/api/user", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      method: "GET"
     });
     if(response.status === 401) {
       window.location.href = "/login";
@@ -76,7 +71,7 @@ const UserProfile: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem("token");
+      (await cookies()).delete('hoop-rivals-auth-token')
       window.location.href = "/login";
     } catch (error) {
       console.error(error);
@@ -92,7 +87,6 @@ const UserProfile: React.FC = () => {
       const response = await fetch("/api/friendships", {
         method: "POST",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           friendUserId: userId,
         }),
       });

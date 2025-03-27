@@ -11,6 +11,10 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 type body = MatchParams & { token: string };
 
 export const POST = async (req: NextRequest) => {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
   const {
     matchType,
     date,
@@ -20,7 +24,6 @@ export const POST = async (req: NextRequest) => {
     arenaId,
     teamSize,
     pointsToWin,
-    token,
   } = (await req.json()) as body;
 
   try {
@@ -35,9 +38,9 @@ export const POST = async (req: NextRequest) => {
       return new Response("Missing date", { status: 400 });
     }
     if (teamA.length !== teamSize || teamB.length !== teamSize) {
-      console.log('teamA:', teamA);
-      console.log('teamB:', teamB);
-      console.log('teamSize:', teamSize);
+      console.log("teamA:", teamA);
+      console.log("teamB:", teamB);
+      console.log("teamSize:", teamSize);
       return new Response("Invalid team size", { status: 400 });
     }
     if (!arenaId) {
@@ -133,13 +136,10 @@ export const POST = async (req: NextRequest) => {
 };
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
 
   try {
     const verify = await verifyJWT(token);
@@ -215,7 +215,7 @@ export const GET = async (req: NextRequest) => {
             },
           },
         },
-      }
+      },
     });
 
     const matches = unSortedMatches.sort((a, b) => {

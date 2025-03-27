@@ -31,10 +31,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   const fetchFriendships = async () => {
     try {
       const response = await fetch("/api/friendships", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       const data = await response.json();
       if (!friendships) {
@@ -59,10 +56,9 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   // Accept a friend request, then refresh the list.
   const handleAccept = async (friendId: string) => {
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("/api/friendships/changeStatus", {
         method: "POST",
-        body: JSON.stringify({ friendId, token, status: "ACCEPTED" }),
+        body: JSON.stringify({ friendId, status: "ACCEPTED" }),
       });
       if (response.status === 200) {
         toast.success("Friend request accepted!");
@@ -76,10 +72,9 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   // Decline a friend request, then refresh the list.
   const handleDecline = async (friendId: string) => {
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("/api/friendships/changeStatus", {
         method: "POST",
-        body: JSON.stringify({ friendId, token, status: "DECLINED" }),
+        body: JSON.stringify({ friendId, status: "DECLINED" }),
       });
       if (response.status === 200) {
         toast.success("Friend request declined!");

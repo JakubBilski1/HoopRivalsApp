@@ -9,13 +9,10 @@ import { imageFileToBase64 } from "@/utils/usables";
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
   try {
     const verify = await verifyJWT(token);
     if (verify.status === 200) {
@@ -26,8 +23,8 @@ export const GET = async (req: NextRequest) => {
           id,
         },
       });
-      console.log('userget token', token)
-      console.log('userget user', user);
+      console.log("userget token", token);
+      console.log("userget user", user);
       return new Response(JSON.stringify(user), { status: 200 });
     } else {
       return new Response("Unauthorized", { status: 401 });
@@ -38,9 +35,13 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const PUT = async (req: NextRequest) => {
-  const { token, userData } = await req.json();
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { userData } = await req.json();
   const { nickname, email, password, name, surname, avatar } = userData;
-  console.log('userData', userData);
+  console.log("userData", userData);
   try {
     const verify = await verifyJWT(token);
     if (verify.status === 200) {
@@ -55,9 +56,10 @@ export const PUT = async (req: NextRequest) => {
       }
       // Since the avatar is already a base64 string from the frontend, we use it directly.
       const avatarUrl = avatar ? avatar : null;
-      
+
       if (password) {
-        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        const passwordRegex =
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
         if (!passwordRegex.test(password)) {
           return new Response(
             "Password must be 8 characters long and contain number, lowercase, uppercase, and special character",

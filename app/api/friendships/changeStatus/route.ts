@@ -7,7 +7,11 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export const POST = async (req: NextRequest) => {
-  const { token, friendId, status } = await req.json();
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { friendId, status } = await req.json();
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {

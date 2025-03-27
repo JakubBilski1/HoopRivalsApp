@@ -18,7 +18,10 @@ export async function PUT(
 ) {
   try {
     const formData = await request.formData();
-    const token = formData.get("token")?.toString() || "";
+    const token = request.cookies.get("hoop-rivals-auth-token")?.value;
+    if (!token) {
+      return new Response("Unauthorized: No token provided", { status: 401 });
+    }
     const name = formData.get("name")?.toString() || "";
     const location = formData.get("location")?.toString() || "";
     const imageFile = formData.get("image");
@@ -72,13 +75,10 @@ export async function DELETE(
   // Destructure the id directly from params
   try {
     // Extract token from Authorization header
-    const authorizationHeader = request.headers.get("Authorization");
-
-    if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+    const token = request.cookies.get("hoop-rivals-auth-token")?.value;
+    if (!token) {
       return new Response("Unauthorized: No token provided", { status: 401 });
     }
-
-    const token = authorizationHeader.split(" ")[1];
 
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {

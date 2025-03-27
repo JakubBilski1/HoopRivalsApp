@@ -56,11 +56,7 @@ export default function ArenasPage() {
   const fetchArenas = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/arenas", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await fetch("/api/arenas");
       if (!res.ok) {
         throw new Error("Failed to fetch arenas");
       }
@@ -87,7 +83,6 @@ export default function ArenasPage() {
     formData.append("name", newArena.name);
     formData.append("location", newArena.location);
     formData.append("image", newArena.imageFile);
-    formData.append("token", localStorage.getItem("token") || "");
 
     try {
       const res = await fetch("/api/arenas", {
@@ -118,7 +113,6 @@ export default function ArenasPage() {
     if (newArena.imageFile) {
       formData.append("image", newArena.imageFile);
     }
-    formData.append("token", localStorage.getItem("token") || "");
 
     try {
       const res = await fetch(`/api/arenas/${editingArena.id}`, {
@@ -144,9 +138,6 @@ export default function ArenasPage() {
     try {
       const res = await fetch(`/api/arenas/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
       });
       if (!res.ok) {
         throw new Error("Failed to delete arena");

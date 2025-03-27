@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from '@prisma/extension-accelerate'
 import bcrypt from "bcrypt"
@@ -27,14 +27,15 @@ export async function POST(request: NextRequest) {
       return new Response("Internal server error", { status: 500 });
     }
     const token: string = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
-    console.log('login token', token)
-    return new Response(
-      JSON.stringify({ message: "User logged in successfully", token }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const response = NextResponse.json({
+      message: "Login successful"
+    });
+    response.cookies.set("hoop-rivals-auth-token", token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    })
+    return response
   } catch (err) {
     console.log(err);
     return new Response("Failed to login user", { status: 500 });

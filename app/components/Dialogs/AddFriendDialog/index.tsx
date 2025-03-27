@@ -39,7 +39,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({
       const response = await fetch(`/api/users`, {
         method: "POST",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           searchQuery: friendSearchQuery,
         }),
         credentials: "include",

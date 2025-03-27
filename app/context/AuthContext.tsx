@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     fetch("/api/checkAuth", {
       method: "POST",
-      body: JSON.stringify({ token: localStorage.getItem("token") }),
       credentials: "include",
     })
       .then(async (res) => {

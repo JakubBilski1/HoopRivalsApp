@@ -17,7 +17,10 @@ export const POST = async (req: NextRequest) => {
     const formData = await req.formData();
 
     // Extract the values from FormData
-    const token = formData.get("token")?.toString() || "";
+    const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+    if (!token) {
+      return new Response("Unauthorized: No token provided", { status: 401 });
+    }
     const name = formData.get("name")?.toString() || "";
     const location = formData.get("location")?.toString() || "";
     const imageFile = formData.get("image");
@@ -51,13 +54,10 @@ export const POST = async (req: NextRequest) => {
 };
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {

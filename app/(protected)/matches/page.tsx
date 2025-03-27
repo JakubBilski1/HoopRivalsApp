@@ -74,10 +74,7 @@ export default function MatchesPage(): React.JSX.Element {
   const fetchUser = async () => {
     try {
       const response = await fetch("/api/user", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       const data = await response.json();
 
@@ -103,10 +100,7 @@ export default function MatchesPage(): React.JSX.Element {
   const fetchFriendships = async () => {
     try {
       const response = await fetch("/api/friendships", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       const data = await response.json();
       setFriendships(data);
@@ -118,10 +112,7 @@ export default function MatchesPage(): React.JSX.Element {
   const fetchArenas = async () => {
     try {
       const response = await fetch("/api/arenas", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       const data = await response.json();
       setArenas(data);
@@ -133,11 +124,7 @@ export default function MatchesPage(): React.JSX.Element {
   async function fetchMatches() {
     setLoading(true);
     try {
-      const response = await fetch("/api/matches", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch("/api/matches");
       if (!response.ok) {
         toast.error("Failed to fetch matches");
         return;
@@ -172,7 +159,6 @@ export default function MatchesPage(): React.JSX.Element {
       const response = await fetch("/api/matches", {
         method: "POST",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           ...newMatch,
         }),
       });
@@ -199,7 +185,6 @@ export default function MatchesPage(): React.JSX.Element {
       const response = await fetch(`/api/matches/${editingMatch.id}`, {
         method: "PUT",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           date: newMatch.date,
           arenaId: newMatch.arenaId,
         }),
@@ -224,10 +209,7 @@ export default function MatchesPage(): React.JSX.Element {
   async function deleteMatch(id: number) {
     try {
       const response = await fetch(`/api/matches/${id}`, {
-        method: "DELETE",
-        body: JSON.stringify({
-          token: localStorage.getItem("token"),
-        }),
+        method: "DELETE"
       });
       if (!response.ok) {
         toast.error("Failed to delete match");

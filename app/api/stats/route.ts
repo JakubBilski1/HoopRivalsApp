@@ -33,11 +33,10 @@ interface AggregatedStats {
 }
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return NextResponse.json({ error: "Unauthorized: No token provided" }, { status: 401 });
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
   }
-  const token = authHeader.split(" ")[1];
 
   try {
     // Verify token
@@ -80,10 +79,14 @@ export async function GET(req: NextRequest) {
     const overallStats = aggregateMatches(matches, userId);
 
     // --- Quarter Matches Grouping ---
-    const quartersMatches = matches.filter(m => m.matchType === "QUARTERS");
-    const quartersStatsByTeamSize: Record<string, Record<string, AggregatedStats>> = {};
+    const quartersMatches = matches.filter((m) => m.matchType === "QUARTERS");
+    const quartersStatsByTeamSize: Record<
+      string,
+      Record<string, AggregatedStats>
+    > = {};
     for (const match of quartersMatches) {
-      if (!match.quarterMatch || match.quarterMatch.quarters.length === 0) continue;
+      if (!match.quarterMatch || match.quarterMatch.quarters.length === 0)
+        continue;
       const teamSize = match.teamSize.toString();
       const qDuration = match.quarterMatch.quarters[0].duration.toString();
       if (!quartersStatsByTeamSize[teamSize]) {
@@ -96,10 +99,13 @@ export async function GET(req: NextRequest) {
     for (const teamSize in quartersStatsByTeamSize) {
       for (const durationStr in quartersStatsByTeamSize[teamSize]) {
         const duration = parseInt(durationStr, 10);
-        const subset = quartersMatches.filter(m => {
-          if (!m.quarterMatch || m.quarterMatch.quarters.length === 0) return false;
+        const subset = quartersMatches.filter((m) => {
+          if (!m.quarterMatch || m.quarterMatch.quarters.length === 0)
+            return false;
           const firstQ = m.quarterMatch.quarters[0];
-          return m.teamSize.toString() === teamSize && firstQ.duration === duration;
+          return (
+            m.teamSize.toString() === teamSize && firstQ.duration === duration
+          );
         });
         const aggregated = aggregateMatches(subset, userId, duration);
         quartersStatsByTeamSize[teamSize][durationStr] = aggregated;
@@ -107,8 +113,13 @@ export async function GET(req: NextRequest) {
     }
 
     // --- Points Matches Grouping by Team Size and Max Points ---
-    const pointsMatches = matches.filter(m => m.matchType === "POINTS" && m.pointsToWin != null);
-    const pointsStatsByTeamSizeAndMax: Record<string, Record<string, AggregatedStats>> = {};
+    const pointsMatches = matches.filter(
+      (m) => m.matchType === "POINTS" && m.pointsToWin != null
+    );
+    const pointsStatsByTeamSizeAndMax: Record<
+      string,
+      Record<string, AggregatedStats>
+    > = {};
     for (const match of pointsMatches) {
       const teamSize = match.teamSize.toString();
       const maxPoints = match.pointsToWin!.toString();
@@ -116,27 +127,36 @@ export async function GET(req: NextRequest) {
         pointsStatsByTeamSizeAndMax[teamSize] = {};
       }
       if (!pointsStatsByTeamSizeAndMax[teamSize][maxPoints]) {
-        pointsStatsByTeamSizeAndMax[teamSize][maxPoints] = {} as AggregatedStats;
+        pointsStatsByTeamSizeAndMax[teamSize][maxPoints] =
+          {} as AggregatedStats;
       }
     }
     for (const teamSize in pointsStatsByTeamSizeAndMax) {
       for (const max in pointsStatsByTeamSizeAndMax[teamSize]) {
         const subset = pointsMatches.filter(
-          m => m.teamSize.toString() === teamSize && m.pointsToWin!.toString() === max
+          (m) =>
+            m.teamSize.toString() === teamSize &&
+            m.pointsToWin!.toString() === max
         );
         const aggregated = aggregateMatches(subset, userId);
         pointsStatsByTeamSizeAndMax[teamSize][max] = aggregated;
       }
     }
 
-    return NextResponse.json({
-      overallStats,
-      quartersStatsByTeamSize,
-      pointsStatsByTeamSizeAndMax,
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        overallStats,
+        quartersStatsByTeamSize,
+        pointsStatsByTeamSizeAndMax,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -145,7 +165,11 @@ export async function GET(req: NextRequest) {
  * If quarterDuration is provided, computes normalized points per game.
  * Also calculates wins based on game totals computed from stats.
  */
-function aggregateMatches(matches: any[], userId: string, quarterDuration?: number): AggregatedStats {
+function aggregateMatches(
+  matches: any[],
+  userId: string,
+  quarterDuration?: number
+): AggregatedStats {
   let totalPoints = 0;
   let totalRebounds = 0;
   let totalAssists = 0;
@@ -179,15 +203,29 @@ function aggregateMatches(matches: any[], userId: string, quarterDuration?: numb
           if (match.matchType === "QUARTERS" && match.quarterMatch) {
             for (const quarter of match.quarterMatch.quarters) {
               for (const stat of quarter.stats) {
-                if (team.teamPlayers.some((tp: any) => tp.playerId === stat.playerId)) {
-                  points += stat.twoPointsScored * 2 + stat.threePointsScored * 3 + stat.freeThrowsScored;
+                if (
+                  team.teamPlayers.some(
+                    (tp: any) => tp.playerId === stat.playerId
+                  )
+                ) {
+                  points +=
+                    stat.twoPointsScored * 2 +
+                    stat.threePointsScored * 3 +
+                    stat.freeThrowsScored;
                 }
               }
             }
           } else if (match.matchType === "POINTS" && match.pointsMatch) {
             for (const stat of match.pointsMatch.stats) {
-              if (team.teamPlayers.some((tp: any) => tp.playerId === stat.playerId)) {
-                points += stat.twoPointsScored * 2 + stat.threePointsScored * 3 + stat.freeThrowsScored;
+              if (
+                team.teamPlayers.some(
+                  (tp: any) => tp.playerId === stat.playerId
+                )
+              ) {
+                points +=
+                  stat.twoPointsScored * 2 +
+                  stat.threePointsScored * 3 +
+                  stat.freeThrowsScored;
               }
             }
           }
@@ -195,9 +233,11 @@ function aggregateMatches(matches: any[], userId: string, quarterDuration?: numb
         }
         // Determine user's team points and maximum opponent points.
         const userTeamPoints = teamPoints[userTeam.id] || 0;
-        const opponentPoints = Object.values(teamPoints)
-          .filter(points => points !== userTeamPoints);
-        const maxOpponentPoints = opponentPoints.length > 0 ? Math.max(...opponentPoints) : 0;
+        const opponentPoints = Object.values(teamPoints).filter(
+          (points) => points !== userTeamPoints
+        );
+        const maxOpponentPoints =
+          opponentPoints.length > 0 ? Math.max(...opponentPoints) : 0;
         if (userTeamPoints > maxOpponentPoints) {
           totalWins += 1;
         }
@@ -210,7 +250,10 @@ function aggregateMatches(matches: any[], userId: string, quarterDuration?: numb
         for (const stat of quarter.stats) {
           if (stat.playerId === userId) {
             userHadStats = true;
-            totalPoints += stat.twoPointsScored * 2 + stat.threePointsScored * 3 + stat.freeThrowsScored;
+            totalPoints +=
+              stat.twoPointsScored * 2 +
+              stat.threePointsScored * 3 +
+              stat.freeThrowsScored;
             totalRebounds += stat.rebounds ?? 0;
             totalAssists += stat.assists ?? 0;
             totalFreeThrowsMade += stat.freeThrowsScored;
@@ -233,7 +276,10 @@ function aggregateMatches(matches: any[], userId: string, quarterDuration?: numb
       for (const stat of match.pointsMatch.stats) {
         if (stat.playerId === userId) {
           userHadStats = true;
-          totalPoints += stat.twoPointsScored * 2 + stat.threePointsScored * 3 + stat.freeThrowsScored;
+          totalPoints +=
+            stat.twoPointsScored * 2 +
+            stat.threePointsScored * 3 +
+            stat.freeThrowsScored;
           totalRebounds += stat.rebounds ?? 0;
           totalAssists += stat.assists ?? 0;
           totalFreeThrowsMade += stat.freeThrowsScored;
@@ -259,11 +305,24 @@ function aggregateMatches(matches: any[], userId: string, quarterDuration?: numb
   const bpg = totalGames > 0 ? totalBlocks / totalGames : 0;
 
   const totalFieldGoalsMade = totalTwoPointsMade + totalThreePointsMade;
-  const totalFieldGoalsAttempted = totalTwoPointsAttempted + totalThreePointsAttempted;
-  const fgPercentage = totalFieldGoalsAttempted > 0 ? (totalFieldGoalsMade / totalFieldGoalsAttempted) * 100 : 0;
-  const twoPtPercentage = totalTwoPointsAttempted > 0 ? (totalTwoPointsMade / totalTwoPointsAttempted) * 100 : 0;
-  const threePtPercentage = totalThreePointsAttempted > 0 ? (totalThreePointsMade / totalThreePointsAttempted) * 100 : 0;
-  const ftPercentage = totalFreeThrowsAttempted > 0 ? (totalFreeThrowsMade / totalFreeThrowsAttempted) * 100 : 0;
+  const totalFieldGoalsAttempted =
+    totalTwoPointsAttempted + totalThreePointsAttempted;
+  const fgPercentage =
+    totalFieldGoalsAttempted > 0
+      ? (totalFieldGoalsMade / totalFieldGoalsAttempted) * 100
+      : 0;
+  const twoPtPercentage =
+    totalTwoPointsAttempted > 0
+      ? (totalTwoPointsMade / totalTwoPointsAttempted) * 100
+      : 0;
+  const threePtPercentage =
+    totalThreePointsAttempted > 0
+      ? (totalThreePointsMade / totalThreePointsAttempted) * 100
+      : 0;
+  const ftPercentage =
+    totalFreeThrowsAttempted > 0
+      ? (totalFreeThrowsMade / totalFreeThrowsAttempted) * 100
+      : 0;
 
   const result: AggregatedStats = {
     totalPoints,

@@ -56,15 +56,18 @@ type PointsStatsData = {
 
 type RequestBody = {
   matchId: number;
-  token: string;
   // Either an array of quarter data OR a single object for points-based stats:
   statsData: QuarterStatsData[] | PointsStatsData;
 };
 
 export async function POST(req: NextRequest) {
   try {
+    const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+    if (!token) {
+      return new Response("Unauthorized: No token provided", { status: 401 });
+    }
     const body = (await req.json()) as RequestBody;
-    const { matchId, token, statsData } = body;
+    const { matchId, statsData } = body;
     
     // Guard: Ensure matchId is provided
     if (matchId === undefined || matchId === null) {
@@ -198,8 +201,12 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+    if (!token) {
+      return new Response("Unauthorized: No token provided", { status: 401 });
+    }
     const body = (await req.json()) as RequestBody;
-    const { matchId, token, statsData } = body;
+    const { matchId, statsData } = body;
     
     // Guard: Ensure matchId is provided
     if (matchId === undefined || matchId === null) {

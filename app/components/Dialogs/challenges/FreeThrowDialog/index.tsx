@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { isDate } from "util/types";
 
 type FreeThrowDialogProps = {
   onChallengeAdded: () => void;
@@ -27,6 +28,16 @@ export default function FreeThrowDialog({ onChallengeAdded }: FreeThrowDialogPro
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Input changed:", e.target.name, e.target.value);
+    if(e.target.name === "date") {
+      const dateValue = new Date(e.target.value);
+      if (isNaN(dateValue.getTime())) {
+        console.error("Invalid date format");
+        return;
+      }
+      setData({ ...data, date: dateValue });
+      return;
+    }
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
@@ -35,7 +46,6 @@ export default function FreeThrowDialog({ onChallengeAdded }: FreeThrowDialogPro
       const response = await fetch("/api/challenge/freethrows", {
         method: "POST",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           date: data.date,
           madeShots: parseInt(data.madeShots),
           attempts: parseInt(data.attempts),
@@ -77,7 +87,7 @@ export default function FreeThrowDialog({ onChallengeAdded }: FreeThrowDialogPro
             type="date"
             placeholder="Date"
             name="date"
-            value={data.date.toISOString().split("T")[0]}
+            value={data.date.toISOString().split('T')[0]} // Format date for input
             onChange={handleChange}
             className="w-full"
           />

@@ -140,16 +140,8 @@ export default function StatsPage() {
     async function fetchStats() {
       setLoading(true);
       setError("");
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("No token found. Please log in.");
-        setLoading(false);
-        return;
-      }
       try {
-        const res = await fetch("/api/stats", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch("/api/stats");
         if (!res.ok) {
           const data = await res.json();
           setError(data.error || "Failed to fetch stats");

@@ -22,7 +22,11 @@ const getBadgeId = (madeShots: number, attempts: number) => {
 };
 
 export const POST = async (req: NextRequest) => {
-  const { token, date, madeShots, attempts } = await req.json();
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { date, madeShots, attempts } = await req.json();
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -63,13 +67,10 @@ export const POST = async (req: NextRequest) => {
 };
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -96,7 +97,11 @@ export const GET = async (req: NextRequest) => {
 };
 
 export const DELETE = async (req: NextRequest) => {
-  const { token, challengeId } = await req.json();
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { challengeId } = await req.json();
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -116,7 +121,11 @@ export const DELETE = async (req: NextRequest) => {
 };
 
 export const PUT = async (req: NextRequest) => {
-  const { token, challengeId, madeShots, attempts, date } = await req.json();
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { challengeId, madeShots, attempts, date } = await req.json();
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {

@@ -10,23 +10,23 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 type Props = {
   params: Promise<{
     id: string;
-  }>
-}
+  }>;
+};
 
-export const DELETE = async (
-  req: NextRequest,
-  props: Props,
-) => {
-  const { token } = await req.json();
+export const DELETE = async (req: NextRequest, props: Props) => {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
       return new Response("Unauthorized", { status: 401 });
     }
     const decoded = jwt.decode(token) as Token;
-    const userId = decoded.id
+    const userId = decoded.id;
 
-    const { id } = await props.params
+    const { id } = await props.params;
 
     if (!id) {
       return new Response("Missing match ID", { status: 400 });
@@ -64,11 +64,12 @@ export const DELETE = async (
   }
 };
 
-export const PUT = async (
-  req: NextRequest,
-  props: Props,
-) => {
-  const { date, arenaId, token } = await req.json();
+export const PUT = async (req: NextRequest, props: Props) => {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
+    return new Response("Unauthorized: No token provided", { status: 401 });
+  }
+  const { date, arenaId } = await req.json();
   // Await the params object first:
   const { id } = await props.params;
   if (!id) {

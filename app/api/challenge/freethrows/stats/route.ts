@@ -7,13 +7,10 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -59,15 +56,15 @@ export const GET = async (req: NextRequest) => {
     }, 0);
     const allTimeTotalChallenges = freethrows.length;
     const stats = {
-        worstBadges,
-        thirdPlace,
-        secondPlace,
-        firstPlace,
-        allTimeEfficiency,
-        allTimeShotsMade,
-        allTimeShotsTaken,
-        allTimeTotalChallenges,
-    }
+      worstBadges,
+      thirdPlace,
+      secondPlace,
+      firstPlace,
+      allTimeEfficiency,
+      allTimeShotsMade,
+      allTimeShotsTaken,
+      allTimeTotalChallenges,
+    };
     return new Response(JSON.stringify(stats), { status: 200 });
   } catch (err) {
     console.error(err);

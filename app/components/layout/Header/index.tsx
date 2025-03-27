@@ -26,10 +26,7 @@ export default function Header() {
   useEffect(() => {
     const fetchUser = async () => {
       const response = await fetch("/api/user", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       if(response.status === 401) {
         window.location.href = "/login";

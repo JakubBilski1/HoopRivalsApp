@@ -57,12 +57,10 @@ function computeFreethrowStats(challenges: any[]) {
 }
 
 export const GET = async (req: NextRequest) => {
-  const authorizationHeader = req.headers.get("Authorization");
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+  const token = req.cookies.get("hoop-rivals-auth-token")?.value;
+  if (!token) {
     return new Response("Unauthorized: No token provided", { status: 401 });
   }
-
-  const token = authorizationHeader.split(" ")[1];
   try {
     const verify = await verifyJWT(token);
     if (verify.status !== 200) {
@@ -94,11 +92,16 @@ export const GET = async (req: NextRequest) => {
     ]);
 
     // Merge the friend lists into a unique map with nickname and avatarUrl
-    const friendMap = new Map<string, { nickname: string; avatarUrl: string }>();
+    const friendMap = new Map<
+      string,
+      { nickname: string; avatarUrl: string }
+    >();
     initiated.forEach((f) => {
       friendMap.set(f.friend.id, {
         nickname: f.friend.nickname,
-        avatarUrl: f.friend.avatarUrl ? f.friend.avatarUrl : "/placeholder.webp",
+        avatarUrl: f.friend.avatarUrl
+          ? f.friend.avatarUrl
+          : "/placeholder.webp",
       });
     });
     received.forEach((f) => {

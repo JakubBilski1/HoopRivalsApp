@@ -118,10 +118,7 @@ export default function FreeThrowChallengePage() {
   const fetchChallenges = async (challType: string) => {
     try {
       const response = await fetch(`/api/challenge/${challType}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       if (response.status === 401) {
         window.location.href = "/login";
@@ -140,10 +137,7 @@ export default function FreeThrowChallengePage() {
   const fetchUserStats = async (challType: string) => {
     try {
       const response = await fetch(`/api/challenge/${challType}/stats`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       if (!response.ok) {
         toast.error("Failed to load user stats");
@@ -163,10 +157,7 @@ export default function FreeThrowChallengePage() {
   const fetchFriendsStats = async (challType: string) => {
     try {
       const response = await fetch(`/api/challenge/${challType}/friendsStats`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        method: "GET"
       });
       if (!response.ok) {
         toast.error("Failed to load friends stats");
@@ -198,7 +189,6 @@ export default function FreeThrowChallengePage() {
       const response = await fetch(`/api/challenge/freethrows`, {
         method: "DELETE",
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
           challengeId,
         }),
       });
@@ -239,7 +229,6 @@ export default function FreeThrowChallengePage() {
         {
           method: "PUT",
           body: JSON.stringify({
-            token: localStorage.getItem("token"),
             date: updateData.date,
             attempts: parseInt(updateData.attempts),
             madeShots: parseInt(updateData.madeShots),
