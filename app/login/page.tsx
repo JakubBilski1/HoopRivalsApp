@@ -50,8 +50,6 @@ const LoginPage: FC = () => {
         error = await response.text();
       }
       if (response.status === 200) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
         toast.success("Logged in successfully");
         setIsAuthenticated(true);
         router.push("/");
