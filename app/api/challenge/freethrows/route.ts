@@ -9,13 +9,13 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 const getBadgeId = (madeShots: number, attempts: number) => {
   const efficiency =
     attempts === 0 ? 0 : Math.round((madeShots / attempts) * 100);
-  if (efficiency <= 40) {
+  if (efficiency < 40) {
     return 1;
-  } else if (efficiency <= 70 && efficiency > 40) {
+  } else if (efficiency < 70 && efficiency >= 40) {
     return 2;
-  } else if (efficiency > 70 && efficiency <= 90) {
+  } else if (efficiency >= 70 && efficiency < 90) {
     return 3;
-  } else if (efficiency > 90) {
+  } else if (efficiency >= 90) {
     return 4;
   }
   return 1;
