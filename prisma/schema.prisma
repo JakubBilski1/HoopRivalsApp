@@ -189,7 +189,7 @@ model MatchStats {
   blocks             Int
 }
 
-model Arena {
+model arena {
   id        Int      @id @default(autoincrement())
   name      String
   location  String   // Optionally add a location/address
@@ -197,6 +197,8 @@ model Arena {
   
   // Matches held at this arena:
   matches   Match[]
+
+  @@map("arena")
 }
 
 model Challenges {
