@@ -189,7 +189,7 @@ model MatchStats {
   blocks             Int
 }
 
-model arena {
+model Arena {
   id        Int      @id @default(autoincrement())
   name      String
   location  String   // Optionally add a location/address
