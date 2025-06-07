@@ -1,6 +1,6 @@
 // app/(protected)/matches/types.ts
 
-import { Arena, PointsMatch, QuarterMatch, QuarterStat, Team } from "@prisma/client";
+import { arena, PointsMatch, QuarterMatch, QuarterStat, Team } from "@prisma/client";
 import { ShortenedUser } from "./User";
 
 export type MatchType = "QUARTERS" | "POINTS";
@@ -29,7 +29,7 @@ export interface Match {
   teamSize: number;
   pointsToWin: number | null;
   arenaId: number;
-  arena: Arena;
+  arena: arena;
   teams: FullTeam[];
   pointsMatch?: PointsMatch & { stats: QuarterStat[] };
   quarterMatch?: QuarterMatch & { quarters: StatQuarter[] };

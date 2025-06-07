@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import ButtonLoading from "@/app/button-loading"
 
 import { Match, MatchParams } from "@/types/Matches";
-import { Arena } from "@prisma/client";
+import { arena } from "@prisma/client";
 
 interface EditMatchDialogProps {
   editingMatch: Match | null; // if present, dialog is open
@@ -25,7 +25,7 @@ interface EditMatchDialogProps {
   onNewMatchChange: (val: MatchParams) => void;
   onClose: () => void;
   onUpdateMatch: () => Promise<void>;
-  arenas: Arena[];
+  arenas: arena[];
 }
 
 export function EditMatchDialog({
